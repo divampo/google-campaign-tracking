@@ -2,22 +2,61 @@
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.1'
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        classpath 'com.android.tools.build:gradle:2.+'
     }
 }
 
-allprojects {
-    repositories {
-        jcenter()
+//indicates that this is a library
+apply plugin: 'android-library'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "24.0.3"
+    sourceSets {
+        main {
+            //Path to your source code
+            java {
+                srcDir 'src/main/java'
+            }
+            manifest.srcFile 'app/src/main/AndroidManifest.xml'
+        }
+    }
+
+    defaultConfig {
+        minSdkVersion 17
+        targetSdkVersion 24
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    lintOptions {
+        abortOnError false
     }
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
 }
+
+//task to delete the old jar
+task deleteOldJar(type: Delete) {
+    delete 'release/googlecampaigntracking.jar'
+}
+
+//task to export contents as jar
+task exportJar(type: Copy) {
+    from('build/intermediates/bundles/release/')
+    into('release/')
+    include('classes.jar')
+    ///Rename the jar
+    rename('classes.jar', 'googlecampaigntracking.jar')
+}
+
+exportJar.dependsOn(deleteOldJar, build)
+
